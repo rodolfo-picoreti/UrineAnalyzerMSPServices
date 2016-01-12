@@ -47,8 +47,6 @@ Serial = class Serial {
     this.onOpen = onOpen
     this.port = 'undefined'
     this.baudrate = 115200
-    this.vendorId = '0x0x8086'
-    this.manufacturer = 'Texas_Instruments'
     this.connect()
   }
 
@@ -57,9 +55,10 @@ Serial = class Serial {
 
     serialport.list(function (error, ports) {
       if (typeof(ports) !== 'undefined') {
+        //console.log(ports)
+        
         ports = ports.filter(function (port) {
-          return (port.manufacturer == self.manufacturer) && 
-                 (port.vendorId == self.vendorId)
+          return (port.pnpId.indexOf('Texas_Instruments') == -1)
         })
         
         if (ports.length !== 0) { 

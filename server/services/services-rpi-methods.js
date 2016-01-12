@@ -1,4 +1,4 @@
-
+  
 Services.rpi.methods.deserialize = function (id, packet) {
   let service = Services.utils.find(Services.rpi.methods.map, 'id', id)
   return {
@@ -36,12 +36,12 @@ Services.rpi.methods.map = [
         preheater: {
           raw: packet.readUInt16BE(10),
           voltage: packet.readUInt16BE(10)*3.3/16384.0,
-          temperature: '?'
+          temperature: 0.0037007729*packet.readUInt16BE(10) + 10.2201522894
         },
         heater: {
           raw: packet.readUInt16BE(12),
           voltage: packet.readUInt16BE(12)*3.3/16384.0,
-          temperature: 0.0037007729*packet.readUInt16BE(12) + 9.2201522894
+          temperature: 0.0037007729*packet.readUInt16BE(12) + 10.2201522894
         },
         sd1: packet.readUInt16BE(14),
         sd2: packet.readUInt16BE(16),

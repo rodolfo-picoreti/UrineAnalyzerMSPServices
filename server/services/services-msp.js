@@ -12,7 +12,7 @@ Services.msp.send = function (method, args, onResponse) {
   buffer.writeUInt8(size - 2, 1)
   
   Services.serialHandle.write(buffer.slice(0, size))
-  Services.msp.callbacks.push({ method, onResponse })
+  Services.msp.callbacks.push({ method, args, onResponse })
 }
 
 /* Parse the MSP response to a previous service request */
@@ -24,13 +24,15 @@ Services.msp.receive = function (packet) {
     throw 'Services MSP: callback error!'
   }
 
+  /*
   let args
   if (status == 'success') {
     args = Services.msp.methods.deserialize(id, packet.slice(2))
   }
+  */
 
   let callback = Services.msp.callbacks.shift()
   if (callback.onResponse) {
-    callback.onResponse(status, { method: callback.method, args })
+    callback.onResponse(status, { method: callback.method, args: callback.args })
   }
 }
