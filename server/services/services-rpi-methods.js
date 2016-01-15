@@ -1,9 +1,14 @@
   
 Services.rpi.methods.deserialize = function (id, packet) {
-  let service = Services.utils.find(Services.rpi.methods.map, 'id', id)
-  return {
-    method: service.method,
-    args: service.deserialize(packet)
+  try {
+    let service = Services.utils.find(Services.rpi.methods.map, 'id', id)
+    return {
+      method: service.method,
+      args: service.deserialize(packet)
+    }
+  }
+  catch (error) {
+    throw new Error(`Rpi methods deserialize throwed: ${error}`)
   }
 }
 

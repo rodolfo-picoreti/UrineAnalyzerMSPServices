@@ -1,12 +1,22 @@
 Services.msp.methods.serialize = function (method, args, buffer, offset) {
-  let service = Services.utils.find(Services.msp.methods.map, 'method', method)
-  service.validateArgs(args)
-  return service.serialize(args, buffer, offset)
+  try {
+    let service = Services.utils.find(Services.msp.methods.map, 'method', method) 
+    service.validateArgs(args)
+    return service.serialize(args, buffer, offset)
+  }
+  catch (error) {
+    throw new Error(`Msp methods serialize throwed: ${error}`)
+  }
 }
 
 Services.msp.methods.deserialize = function (id, packet) {
-  let service = Services.utils.find(Services.msp.methods.map, 'id', id)
-  return { args: service.deserialize(packet) }
+  try {
+    let service = Services.utils.find(Services.msp.methods.map, 'id', id)
+    return { args: service.deserialize(packet) }   
+  }
+  catch (error) {
+    throw new Error(`Msp methods deserialize throwed: ${error}`)
+  }
 }
 
 function validateArray(args) {

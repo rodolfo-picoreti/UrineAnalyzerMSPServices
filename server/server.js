@@ -1,55 +1,31 @@
-
-Valves = new Mongo.Collection('valves')
-Pumps = new Mongo.Collection('pumps')
-Samples = new Mongo.Collection('samples')
-
-let configureValve = function (id, value) {
-	console.log(`configureValve ${id} : ${value}`)
-	Services.call('configureValves', [{ id, value }], 
-		Meteor.bindEnvironment(function (status, result) {
-			if (status == 'success') {
-				console.log(`configureValve ${id} : ${value} done!`)
-				let selector = { id }
-				let modifier = { $set: { value } }
-				let options = { upsert: true }
-				Valves.update(selector, modifier, options)
-			}
-		})
-	)
+function logger(status, results) {
+	console.log(`${status}: ${results}`)
 }
 
-Meteor.methods({
-	configureValve
-})
-
 Meteor.startup(function () {
-	if (Valves.find({}).fetch().length === 0) {
-		for (let i = 0; i < 5; i++) {
-			Valves.insert({ id: i, value: 0 })
-		}
-	}
 
-	Services.initialize(Meteor.bindEnvironment(function() {
-		
-		for (let i = 0; i < 5; i++) {
-			configureValve(i, 0)
-		}
+	Services.initialize(function() {
 
 		Services.on('storeSample', function (args) {
-			console.log(args.heater)
+			console.log(`   Heater: ${args.heater.raw}   ${args.heater.temperature}\nPreheater: ${args.preheater.raw}   ${args.preheater.temperature}`)
 		})
 
-		Services.call('startSampling', { samplingTime: 1000 })
-
-		Services.call('configureLocks', [ 
-			{ id: 0, value: 0 }, // Unlock pumps
-			{ id: 1, value: 0 }  // Unlock valves
-		])		
+		Services.call('startSampling', { samplingTime: 1000 }, function(status) {
+			if (status == 'busy') console.log('Was sampling before')
+		})
 
 		/*
+		setInterval(function() {
+			Services.call('configureLocks', [ 
+				{ id: 2, value: 0 } // Unlock heaters
+			], logger)		
+		}, 1000)
+		
 		Services.call('configureHeaters', [ 
-			{ id: 3, value: 140 } 
+			{ id: 2, value: 100 }, 
+			{ id: 3, value: 110 } 
 		], logger)
+
 
 		Services.call('selectSensor', { id: 2 })
 
@@ -57,11 +33,11 @@ Meteor.startup(function () {
 		Services.call('configureValves', [ 
 			{ id: 0, value: 0 },
 			{ id: 1, value: 1 },
-			{ id: 2, value: 0 },
+			{ id: 2, value: 0 },	
 			{ id: 3, value: 1 },
 			{ id: 4, value: 1 } 
 		], logger)
 
 		*/
-	}))
+	})
 })
