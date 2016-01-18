@@ -1,4 +1,6 @@
 # configureLocks([ { id, value } ... ])
+    >> Configure service locks, control if the service is on automatic or manual
+
     args: (array of objects with id and value)
         id: lock id
             0: SERVICE_LOCK_MOTORS
@@ -16,8 +18,9 @@
             { id: 1, value: 0 }
         ]) 
         
-# startSampling({ samplingTime })
-    
+# startSampling({ samplingTime }) !! Deprecated
+    >> Start auto sampling
+
     args:
 	    samplingTime: Sampling time in milliseconds
 
@@ -25,12 +28,30 @@
 		// Request samples every 1s
 		Services.call('startSampling', { samplingTime: 1000 }) 
 
-# stopSampling({ })
-	usage:
-		Services.call('stopSampling') 
-		
-# selectSensor({ id })
+# stopSampling({ }) !! Deprecated
+	>> Stop auto sampling
     
+    usage:
+		Services.call('stopSampling') 
+
+# resetCounter({ }) 
+    >> Reset ADC Sample counter
+
+    usage:
+        Services.call('resetCounter') 
+
+# sampleOnce({ }) 
+    >> Request one sample 
+
+    usage:
+        Services.call('sampleOnce', {}, function (status, data) {
+            // data.result holds the sample data
+            console.log(data.result) 
+        }) 
+
+# selectSensor({ id })
+    >> Can be used to sample only a single sensor when sampling on manual mode
+
 	id: Id of the sensor to be selected
 		0: SENSOR_PH
 		1: SENSOR_NA
@@ -43,6 +64,8 @@
 		Services.call('selectSensor', { id: 1 }) 
 
 # configureValves([ { id, value } ... ])
+    >> Let the user control system valves when manual mode is selected
+
     args: (array of objects with id and value)
         id: valve id
             0: VALVE_PROBE_LOWER
@@ -62,6 +85,8 @@
         ]) 
 
 # configurePumps([ { id, value } ... ])
+    >> Let the user control system pumps when manual mode is selected
+
     args: (array of objects with id and value)
         id: pump id
             0: PWM_REAGENT_PUMP
@@ -78,6 +103,8 @@
         ]) 
 
 # configureHeaters([ { id, value } ... ])
+    >> Let the user control system heaters when manual mode is selected
+
     args: (array of objects with id and value)
         id: heater id
             2: PWM_PREHEATER

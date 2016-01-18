@@ -7,15 +7,22 @@ Meteor.startup(function () {
 	Services.initialize(function() {
 
 		Services.call('resetCounter', {}, function(status) {
+			// If we succeded then we can start sampling
 			if (status == 'success') {
+				// We need to store this handle in case the connection with the MSP is lost
 				let handler = setInterval(function() {
 					if (!Services.isConnected()) {
+						// If we lose connection stop executing this periodicly
 						clearInterval(handler)
 					}
 					
+					// Send sampling request
 					Services.call('sampleOnce', {}, function(status, data) {
-						console.log(status)
-						console.log(data.result)
+						if (status == 'success')  {
+							console.log(data.result)
+						} else {
+							console.log('sampleOnce failed!')
+						}
 					})		
 				}, 10000)			
 			} else {
