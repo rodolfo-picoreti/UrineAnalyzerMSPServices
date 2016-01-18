@@ -50,8 +50,8 @@ Services.rpi.methods.map = [
         },
         sd1: packet.readUInt16BE(14),
         sd2: packet.readUInt16BE(16),
-        //timestamp: packet.readUIntBE(18, 6),
-        counter: packet.readUInt32BE(24)
+        timestamp: packet.readUInt32BE(18),
+        counter: packet.readUInt32BE(22)
       }   
       return result
     },

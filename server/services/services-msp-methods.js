@@ -12,7 +12,11 @@ Services.msp.methods.serialize = function (method, args, buffer, offset) {
 Services.msp.methods.deserialize = function (id, packet) {
   try {
     let service = Services.utils.find(Services.msp.methods.map, 'id', id)
-    return { args: service.deserialize(packet) }   
+    
+    if (typeof(service.deserialize) !== 'undefined') {
+      return service.deserialize(packet)
+    }
+    return { }
   }
   catch (error) {
     throw new Error(`Msp methods deserialize throwed: ${error}`)
@@ -51,18 +55,6 @@ Services.msp.methods.map = [
       })
 
       return 1 + 2*i
-    },
-    deserialize(payload) {
-      let args = []
-      
-      for (let i = 0; i < payload.length; i += 2) {
-        args.push({
-          id: payload.readUInt8(i),
-          value: payload.readUInt8(i+1)
-        })
-      }
-
-      return args
     }
   },  
   {
@@ -75,12 +67,8 @@ Services.msp.methods.map = [
     },
     serialize(args, buffer, offset) {
       buffer.writeUInt8(this.id, offset)
-      buffer.writeUInt16BE(args.samplingTime, offset+1)
-      return 3
-    },
-    deserialize(payload) {
-      let samplingTime = payload.readUInt16BE(0)
-      return { samplingTime }
+      buffer.writeUInt32BE(args.samplingTime, offset+1)
+      return 5
     }
   },
   {
@@ -91,9 +79,6 @@ Services.msp.methods.map = [
     serialize(args, buffer, offset) {
       buffer.writeUInt8(this.id, offset)
       return 1
-    },
-    deserialize(payload) {
-      return {}
     }
   },
   {
@@ -114,10 +99,65 @@ Services.msp.methods.map = [
       buffer.writeUInt8(this.id, offset)
       buffer.writeUInt8(args.id, offset + 1)
       return 2
+    }
+  },
+  {
+    id: 0x04,
+    method: 'sampleOnce',
+    validateArgs(args) {
     },
-    deserialize(payload) {
-      let id = payload.readUInt8(0)
-      return { id }
+    serialize(args, buffer, offset) {
+      buffer.writeUInt8(this.id, offset)
+      return 1
+    },
+    deserialize(packet) {
+      let result = {
+        ph: {
+          raw: packet.readUInt16BE(0),
+          voltage: packet.readUInt16BE(0)*3.3/16384.0
+        },
+        na: {
+          raw: packet.readUInt16BE(2),
+          voltage: packet.readUInt16BE(2)*3.3/16384.0
+        },
+        cl: {
+          raw: packet.readUInt16BE(4),
+          voltage: packet.readUInt16BE(4)*3.3/16384.0
+        },
+        k: {
+          raw: packet.readUInt16BE(6),
+          voltage: packet.readUInt16BE(6)*3.3/16384.0
+        },
+        conductivity: {
+          raw: packet.readUInt16BE(8),
+          voltage: packet.readUInt16BE(8)*3.3/16384.0
+        },
+        preheater: {
+          raw: packet.readUInt16BE(10),
+          voltage: packet.readUInt16BE(10)*3.3/16384.0,
+          temperature: 0.0037007729*packet.readUInt16BE(10) + 10.2201522894
+        },
+        heater: {
+          raw: packet.readUInt16BE(12),
+          voltage: packet.readUInt16BE(12)*3.3/16384.0,
+          temperature: 0.0037007729*packet.readUInt16BE(12) + 10.2201522894
+        },
+        sd1: packet.readUInt16BE(14),
+        sd2: packet.readUInt16BE(16),
+        timestamp: packet.readUInt32BE(18),
+        counter: packet.readUInt32BE(22)
+      }   
+      return result
+    }
+  },
+  {
+    id: 0x05,
+    method: 'resetCounter',
+    validateArgs(args) {
+    },
+    serialize(args, buffer, offset) {
+      buffer.writeUInt8(this.id, offset)
+      return 1
     }
   },
   {
@@ -142,18 +182,6 @@ Services.msp.methods.map = [
       })
 
       return 1 + 2*i
-    },
-    deserialize(payload) {
-      let args = []
-      
-      for (let i = 0; i < payload.length; i += 2) {
-        args.push({
-          id: payload.readUInt8(i),
-          value: payload.readUInt8(i+1)
-        })
-      }
-
-      return args
     }
   },
   {
@@ -175,18 +203,6 @@ Services.msp.methods.map = [
       })
 
       return 1 + i*3
-    },
-    deserialize(payload) {
-      let args = []
-      
-      for (let i = 0; i < payload.length; i += 3) {
-        args.push({
-          id: payload.readUInt8(i),
-          value: payload.readUInt16BE(i+1)
-        })
-      }
-
-      return args
     }
   },
   {
@@ -208,18 +224,6 @@ Services.msp.methods.map = [
       })
 
       return 1 + i*3
-    },
-    deserialize(payload) {
-      let args = []
-      
-      for (let i = 0; i < payload.length; i += 3) {
-        args.push({
-          id: payload.readUInt8(i),
-          value: payload.readUInt16BE(i+1)
-        })
-      }
-
-      return args
     }
   },
   {
@@ -231,9 +235,6 @@ Services.msp.methods.map = [
     serialize(args, buffer, offset) {
       buffer.writeUInt8(this.id)
       return 1
-    },
-    deserialize(payload) {
-      return { }
     }
   }
 ]
