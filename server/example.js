@@ -5,7 +5,6 @@ function logger(status, data) {
 Meteor.startup(function () {
 
 	Services.initialize(function() {
-
 		Services.call('resetCounter', {}, function(status) {
 			// If we succeded then we can start sampling
 			if (status == 'success') {
@@ -29,7 +28,6 @@ Meteor.startup(function () {
 				console.log('resetCounter failed!')
 			}
 		})
-
 		/*
 		Services.call('configureLocks', [ 
 			{ id: 2, value: 0 } // Unlock heaters

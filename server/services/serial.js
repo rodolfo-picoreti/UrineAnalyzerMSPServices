@@ -48,8 +48,6 @@ Serial = class Serial {
     this.onDisconnect = null
 
     this.port = null
-    this.pnpId = 'pci-Texas_Instruments_XDS110__02.02.04.02__with_CMSIS-DAP_00000000-if00'
-    this.vendorId = '0x0x8086'
     this.baudrate = 115200
     this.serialHandle = null
     this.connect()  
@@ -84,23 +82,20 @@ Serial = class Serial {
         } 
         else {      
           ports = ports.filter((port) => { 
-            return (port.pnpId === this.pnpId)
-            //return (port.vendorId === this.vendorId)
+            return (port.manufacturer === 'Texas_Instruments')
           })
 
           if (ports.length === 0) {
-            console.log('>> Serial: Unable to find MSP432!')
+            console.log(`>> Serial: Unable to find MSP432!`)
           }
           else { 
-            console.log('>> Serial: MSP432 found')
             this.port = ports[0].comName
+            console.log(`>> Serial: MSP432 found at ${this.port}`)
+            
             this.serialHandle = new SerialPort(this.port, {
               baudrate: this.baudrate,
               parser: parser
-            }, (error) => { 
-              if (error) 
-                console.log(`>> Serial: ${error} `) 
-            })
+            }, false)
 
             this.open()
           }
@@ -113,12 +108,18 @@ Serial = class Serial {
   }
 
   open() {
+    console.log(`>> Trying to open ${this.port}`)
+    
     this.serialHandle.open(error => {
       if (!error) {
         console.log(`>> Serial: ${this.port} connection successful`)
         if (typeof(this.onOpen) !== 'undefined') {
           this.onOpen()
         }
+      }
+      else {
+        console.log(`>> Failed to open ${this.port}`)
+        this.serialHandle = null
       }
     })
   }
@@ -142,6 +143,9 @@ Serial = class Serial {
   write(data) {
     if (this.isConnected()) {
       this.serialHandle.write(data)
+    }
+    else {
+      throw new Error(`Serial write error: MSP is not connected!`)
     }
   }
 }
